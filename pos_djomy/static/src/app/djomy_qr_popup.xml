@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="pos_djomy.DjomyQRPopup">
+        <Dialog title="props.title" size="'md'">
+            <div class="djomy-qr-popup text-center">
+                <!-- Amount Display -->
+                <div class="mb-3">
+                    <span class="fs-3 fw-bold text-primary" t-esc="formattedAmount"/>
+                </div>
+
+                <!-- QR Code Image -->
+                <div class="qr-container d-flex justify-content-center mb-3">
+                    <div class="qr-code-wrapper p-3 bg-white rounded shadow-sm">
+                        <img t-if="hasQRCode"
+                             t-att-src="props.qrCodeBase64"
+                             alt="QR Code"
+                             style="width: 256px; height: 256px;"/>
+                        <div t-else="" class="text-danger p-4">
+                            <i class="fa fa-exclamation-triangle me-2"/>
+                            Erreur: QR code non disponible
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Status Message -->
+                <div class="status-message mb-3">
+                    <div t-if="state.status === 'waiting'" class="d-flex align-items-center justify-content-center text-muted">
+                        <div class="spinner-border spinner-border-sm text-primary me-2" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <span t-esc="state.message"/>
+                    </div>
+                    <div t-if="state.status === 'success'" class="text-success fs-5">
+                        <i class="fa fa-check-circle me-2"/>
+                        <span>Paiement recu!</span>
+                    </div>
+                    <div t-if="state.status === 'error'" class="text-danger">
+                        <i class="fa fa-times-circle me-2"/>
+                        <span t-esc="state.message"/>
+                    </div>
+                </div>
+
+                <!-- Instructions -->
+                <p class="text-muted small mb-2">
+                    <t t-if="props.smsSent">
+                        <i class="fa fa-check-circle text-success me-1"/>
+                        Un SMS avec le lien de paiement a ete envoye au client.
+                    </t>
+                    <t t-else="">
+                        Le client doit scanner ce QR code avec son telephone pour payer.
+                    </t>
+                </p>
+
+                <!-- Payment Link (for manual copy if needed) -->
+                <details class="mt-2 text-start">
+                    <summary class="text-muted small" style="cursor: pointer;">
+                        Afficher le lien de paiement
+                    </summary>
+                    <div class="mt-2 p-2 bg-light rounded">
+                        <code class="small d-block text-break user-select-all" t-esc="props.paymentLink"/>
+                    </div>
+                </details>
+            </div>
+
+            <t t-set-slot="footer">
+                <button class="btn btn-secondary btn-lg" t-on-click="cancel">
+                    Annuler le paiement
+                </button>
+            </t>
+        </Dialog>
+    </t>
+</templates>

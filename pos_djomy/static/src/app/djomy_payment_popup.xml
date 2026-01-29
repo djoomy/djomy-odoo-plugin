@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="pos_djomy.DjomyAmountPopup">
+        <Dialog title="props.title" size="'md'">
+            <div class="djomy-amount-popup">
+                <!-- Amount Input -->
+                <div class="mb-4">
+                    <label for="djomy_amount" class="form-label fw-bold">
+                        Montant a payer
+                    </label>
+                    <div class="input-group input-group-lg">
+                        <input
+                            type="number"
+                            class="form-control form-control-lg text-end"
+                            id="djomy_amount"
+                            t-ref="amountInput"
+                            t-att-value="state.amount"
+                            t-on-input="onAmountChange"
+                            t-on-keydown="onKeydown"
+                            min="1"
+                            step="any"
+                        />
+                        <span class="input-group-text" t-esc="props.currency.symbol"/>
+                    </div>
+                </div>
+
+                <!-- Phone Number Input (Optional) -->
+                <div class="mb-3">
+                    <label for="djomy_phone" class="form-label fw-bold">
+                        Numero de telephone
+                        <span class="text-muted fw-normal">(optionnel)</span>
+                    </label>
+                    <input
+                        type="tel"
+                        class="form-control"
+                        id="djomy_phone"
+                        t-att-value="state.phoneNumber"
+                        t-on-input="onPhoneChange"
+                        t-on-keydown="onKeydown"
+                        placeholder="00224 6XX XXX XXX"
+                    />
+                    <div class="form-text text-muted">
+                        Si renseigne, le lien de paiement sera envoye par SMS au client.
+                    </div>
+                </div>
+
+                <div class="alert alert-info small mb-0">
+                    <i class="fa fa-info-circle me-1"/>
+                    Le client scannera le QR code ou recevra un SMS pour payer.
+                </div>
+            </div>
+
+            <t t-set-slot="footer">
+                <button class="btn btn-secondary btn-lg" t-on-click="cancel">
+                    Annuler
+                </button>
+                <button
+                    class="btn btn-primary btn-lg"
+                    t-on-click="confirm"
+                    t-att-disabled="state.amount &lt;= 0">
+                    <i class="fa fa-qrcode me-2"/>
+                    Generer QR Code
+                </button>
+            </t>
+        </Dialog>
+    </t>
+</templates>

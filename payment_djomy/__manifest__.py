@@ -1,0 +1,25 @@
+# Part of Odoo. See LICENSE file for full copyright and licensing details.
+
+{
+    'name': 'Payment Provider: Djomy',
+    'version': '1.2',
+    'category': 'Accounting/Payment Providers',
+    'sequence': 350,
+    'summary': "A Guinean payment aggregator for Orange Money, MTN Mobile Money, and KULU.",
+    'description': " ",
+    'depends': ['payment'],
+    'data': [
+        'views/payment_djomy_templates.xml',
+        'views/payment_provider_views.xml',
+        'data/payment_provider_data.xml',
+    ],
+    'assets': {
+        'web.assets_frontend': [
+            'payment_djomy/static/src/img/*',
+            'payment_djomy/static/src/js/payment_form.js',
+        ],
+    },
+    'post_init_hook': 'post_init_hook',
+    'uninstall_hook': 'uninstall_hook',
+    'license': 'LGPL-3',
+}

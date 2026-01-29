@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Inline form displayed in payment popup -->
+    <template id="inline_form" name="Djomy Inline Form">
+        <div class="w-100">
+            <label for="o_djomy_phone" class="form-label small fw-bold">
+                Numero client <span class="text-danger">*</span>
+            </label>
+            <input type="tel"
+                   id="o_djomy_phone"
+                   name="o_djomy_phone"
+                   class="form-control"
+                   placeholder="Ex: 620123456"
+                   required="required"/>
+        </div>
+    </template>
+
+    <!-- Redirect form for payment gateway -->
+    <template id="redirect_form">
+        <form t-att-action="api_url" method="get"/>
+    </template>
+
+</odoo>

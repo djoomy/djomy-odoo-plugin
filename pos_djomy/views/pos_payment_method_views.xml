@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="pos_payment_method_view_form_inherit_pos_djomy" model="ir.ui.view">
+        <field name="name">pos.payment.method.form.inherit.djomy</field>
+        <field name="model">pos.payment.method</field>
+        <field name="inherit_id" ref="point_of_sale.pos_payment_method_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='use_payment_terminal']" position="after">
+                <!-- Djomy Payment Method Selection -->
+                <field name="djomy_payment_method"
+                       invisible="use_payment_terminal != 'djomy'"
+                       required="use_payment_terminal == 'djomy'"/>
+                <div colspan="2" class="mt16"
+                     invisible="use_payment_terminal != 'djomy'">
+                    <button name="action_djomy_config"
+                            type="object"
+                            icon="oi-arrow-right"
+                            string="Configure Djomy provider credentials"
+                            class="btn-link"/>
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>
