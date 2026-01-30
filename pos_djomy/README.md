@@ -33,7 +33,7 @@ See configuration in the [payment_djomy](../payment_djomy/) module.
 
 1. Go to **Point of Sale** > **Configuration** > **Payment Methods**
 2. Create a new payment method:
-   - **Name**: JOMI (or your preferred name)
+   - **Name**: Djomy (or your preferred name)
    - **Payment Terminal**: Djomy
    - **Djomy Method**: Orange Money / MTN / Kulu
 3. Add the payment method to your POS configuration
@@ -41,7 +41,7 @@ See configuration in the [payment_djomy](../payment_djomy/) module.
 ## Payment Flow
 
 ```
-1. Cashier selects "JOMI" payment
+1. Cashier selects "Djomy" payment
           ↓
 2. Popup: enter amount + phone (optional)
           ↓

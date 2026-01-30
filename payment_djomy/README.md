@@ -28,7 +28,7 @@ cp -r payment_djomy /path/to/odoo/addons/
 3. Configure:
    - **Client ID**: Your Djomy API client ID
    - **Client Secret**: Your Djomy API client secret
-   - **Partner Domain** *(optional)*: Your registered domain with Djomy
+   - **Partner Domain**: Your domain registered and validated by Djomy *(optional in Test mode, required in Production)*
 4. Select mode: **Test** (sandbox) or **Enabled** (production)
 5. Click **Publish** to make it available to customers
 

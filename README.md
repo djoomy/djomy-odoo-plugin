@@ -55,7 +55,7 @@ cp -r payment_djomy pos_djomy /path/to/odoo/addons/
 3. Enter your credentials:
    - **Client ID**: Provided by Djomy
    - **Client Secret**: Provided by Djomy
-   - **Partner Domain**: Your domain registered with Djomy (optional)
+   - **Partner Domain**: Your domain registered and validated by Djomy *(optional in Test mode, required in Production)*
 4. Select mode: **Test** or **Enabled**
 5. Click **Publish**
 
@@ -63,7 +63,7 @@ cp -r payment_djomy pos_djomy /path/to/odoo/addons/
 
 1. Go to **Point of Sale** > **Configuration** > **Payment Methods**
 2. Create a new payment method:
-   - **Name**: JOMI (or your preferred name)
+   - **Name**: Djomy (or your preferred name)
    - **Payment Terminal**: Djomy
    - **Djomy Method**: Orange Money / MTN / Kulu
 3. Add the payment method to your POS configuration
@@ -95,7 +95,7 @@ Customer selects Djomy → Enters phone number → Redirected to Djomy
 ### POS Flow
 
 ```
-Cashier selects JOMI → Enters amount → QR code displayed
+Cashier selects Djomy → Enters amount → QR code displayed
     → Customer scans → Pays on mobile → Auto-confirmed via polling
 ```
 
@@ -138,7 +138,7 @@ LGPL-3.0 - See [LICENSE](https://www.gnu.org/licenses/lgpl-3.0.html)
 
 ## Support
 
-- **Djomy Documentation**: [https://djomy.africa/docs](https://djomy.africa/docs)
+- **Djomy API Documentation**: [https://developers.djomy.africa](https://developers.djomy.africa)
 - **Issues**: [GitHub Issues](https://github.com/djoomy/djomy-odoo-plugin/issues)
 
 ## Contributing
