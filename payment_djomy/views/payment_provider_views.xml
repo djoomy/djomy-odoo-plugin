@@ -16,8 +16,7 @@
                            required="code == 'djomy' and state != 'disabled'"
                            password="True"/>
                     <field name="djomy_partner_domain"
-                           string="Partner Domain"
-                           placeholder="votre-domaine.com"/>
+                           string="Partner Domain"/>
                 </group>
             </group>
         </field>

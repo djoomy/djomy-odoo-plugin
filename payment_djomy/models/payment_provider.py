@@ -39,7 +39,7 @@ class PaymentProvider(models.Model):
     )
     djomy_partner_domain = fields.Char(
         string="Partner Domain",
-        help="Optional X-PARTNER-DOMAIN header value for API requests.",
+        help="Your domain registered and validated by Djomy. Optional in Test mode, required in Production.",
         copy=False,
     )
 
