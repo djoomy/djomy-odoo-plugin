@@ -2,6 +2,7 @@
 
 import hmac
 import hashlib
+import requests
 
 from odoo import _, api, fields, models
 from odoo.exceptions import ValidationError
@@ -44,6 +45,15 @@ class PaymentProvider(models.Model):
     )
 
     # === COMPUTE METHODS === #
+
+    @api.constrains('state', 'djomy_partner_domain')
+    def _check_djomy_partner_domain(self):
+        for provider in self.filtered(lambda p: p.code == 'djomy'):
+            if provider.state == 'enabled' and not provider.djomy_partner_domain:
+                raise ValidationError(_(
+                    "Djomy: Partner Domain is required in Production mode. "
+                    "Please configure your domain registered with Djomy."
+                ))
 
     def _compute_feature_support_fields(self):
         """Override of `payment` to enable additional features."""
@@ -151,13 +161,19 @@ class PaymentProvider(models.Model):
         """Override of `payment` to parse the error message."""
         if self.code != 'djomy':
             return super()._parse_response_error(response)
-        return response.json().get('message', '')
+        try:
+            return response.json().get('message', '')
+        except (ValueError, requests.exceptions.JSONDecodeError):
+            return response.text or _("Djomy API error (HTTP %s)", response.status_code)
 
     def _parse_response_content(self, response, **kwargs):
         """Override of `payment` to parse the response content."""
         if self.code != 'djomy':
             return super()._parse_response_content(response, **kwargs)
-        json_response = response.json()
+        try:
+            json_response = response.json()
+        except (ValueError, requests.exceptions.JSONDecodeError):
+            raise ValidationError(_("Djomy: Invalid API response (HTTP %s)", response.status_code))
         if json_response.get('success'):
             return json_response.get('data', json_response)
         return json_response

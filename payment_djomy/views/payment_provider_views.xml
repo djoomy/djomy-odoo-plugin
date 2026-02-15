@@ -16,7 +16,8 @@
                            required="code == 'djomy' and state != 'disabled'"
                            password="True"/>
                     <field name="djomy_partner_domain"
-                           string="Partner Domain"/>
+                           string="Partner Domain"
+                           required="code == 'djomy' and state == 'enabled'"/>
                 </group>
             </group>
         </field>
