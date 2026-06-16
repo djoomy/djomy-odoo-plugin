@@ -134,3 +134,80 @@ class PaymentTransaction(models.Model):
                 payment_status, self.reference
             )
             self._set_error(_("Unknown payment status: %s", payment_status))
+
+    # === UX : nettoyage des transactions zombies ===========================
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        """Override : à la création d'une nouvelle tx Djomy, annule les
+        précédentes `draft`/`pending` rattachées aux mêmes SO/factures.
+
+        Le besoin métier : si le client a abandonné un précédent paiement
+        (browser fermé, timeout réseau, IPN perdu côté Djomy…), la tx
+        précédente reste accrochée à la commande/facture et bloque l'UX
+        du portail. À chaque nouvelle tentative on fait table rase des
+        zombies pour qu'il n'y ait au plus qu'une tx active par périmètre.
+
+        Sont préservés : tous les états finaux (`done`/`cancel`/`error`) et
+        toutes les tx d'autres providers (scope strict `provider_code='djomy'`).
+        """
+        records = super().create(vals_list)
+        records.filtered(lambda t: t.provider_code == 'djomy')._djomy_cancel_stale_siblings()
+        return records
+
+    def _djomy_cancel_stale_siblings(self):
+        """Annule les autres tx Djomy `draft`/`pending` sur les mêmes SO /
+        factures que `self`, ainsi que les `account.payment` draft associés.
+        """
+        PT = self.sudo()
+        for tx in self:
+            so_ids = tx.sale_order_ids.ids if 'sale_order_ids' in tx._fields else []
+            inv_ids = tx.invoice_ids.ids if 'invoice_ids' in tx._fields else []
+            if not (so_ids or inv_ids):
+                continue
+            domain = [
+                ('id', '!=', tx.id),
+                ('provider_code', '=', 'djomy'),
+                ('state', 'in', ('draft', 'pending')),
+            ]
+            stale = PT.browse()
+            if so_ids:
+                stale |= PT.search(domain + [('sale_order_ids', 'in', so_ids)])
+            if inv_ids:
+                stale |= PT.search(domain + [('invoice_ids', 'in', inv_ids)])
+            if not stale:
+                continue
+            _logger.info(
+                "[DJOMY] tx %s supersedes %d stale tx(s) %s — auto-cancel",
+                tx.reference, len(stale), stale.mapped('reference'),
+            )
+            # Note interne en chatter SO/facture — pas dans `state_message`
+            # qui serait rendu côté portail client (payment_templates).
+            note = _(
+                "Transaction Djomy %(old)s annulée automatiquement — "
+                "remplacée par la nouvelle tentative %(new)s.",
+                old=', '.join(stale.mapped('reference')), new=tx.reference,
+            )
+            if 'sale_order_ids' in tx._fields:
+                for so in tx.sale_order_ids:
+                    so.message_post(body=note)
+            if 'invoice_ids' in tx._fields:
+                for inv in tx.invoice_ids:
+                    inv.message_post(body=note)
+
+            for s in stale:
+                s._set_canceled()
+                # Annule aussi les account.payment draft liés (sinon la
+                # facture reste polluée par un brouillon orphelin).
+                stale_payments = self.env['account.payment'].sudo().search([
+                    ('payment_transaction_id', '=', s.id),
+                    ('state', '=', 'draft'),
+                ])
+                for p in stale_payments:
+                    try:
+                        p.action_cancel()
+                    except Exception as exc:
+                        _logger.warning(
+                            "[DJOMY] could not cancel stale account.payment "
+                            "%d (tx %s): %s", p.id, s.reference, exc,
+                        )
