@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+
+    <!--
+        Cron d'annulation forcée des transactions Djomy `pending`
+        anciennes. Sur Odoo v16+, le portail masque le bouton "Payer"
+        tant qu'une `payment.transaction` en `pending` est rattachée à
+        la facture — un client dont le paiement Djomy est resté bloqué
+        (Djomy n'a jamais renvoyé de statut final) n'a alors aucun
+        moyen de retenter depuis son espace.
+
+        Ce cron passe toutes les 30 min et annule les tx qui dépassent
+        `djomy.pending_auto_cancel_minutes` (défaut 120 min = 2h,
+        configurable). Le zombie cleanup existant fait le reste sur la
+        nouvelle tentative.
+    -->
+    <record id="ir_cron_djomy_cancel_stale_pending" model="ir.cron">
+        <field name="name">Djomy - Cancel Stale Pending Transactions</field>
+        <field name="model_id" ref="payment.model_payment_transaction"/>
+        <field name="state">code</field>
+        <field name="code">model._cron_djomy_cancel_stale_pending()</field>
+        <field name="user_id" ref="base.user_root"/>
+        <field name="interval_number">30</field>
+        <field name="interval_type">minutes</field>
+        <field name="active" eval="True"/>
+    </record>
+
+</odoo>

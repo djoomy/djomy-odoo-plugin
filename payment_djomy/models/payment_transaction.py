@@ -1,6 +1,8 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
-from odoo import _, api, models
+from datetime import timedelta
+
+from odoo import _, api, fields, models
 from odoo.exceptions import ValidationError
 from odoo.tools import urls
 
@@ -211,3 +213,49 @@ class PaymentTransaction(models.Model):
                             "[DJOMY] could not cancel stale account.payment "
                             "%d (tx %s): %s", p.id, s.reference, exc,
                         )
+
+    # === CANCEL FORCÉ — débloque le portail quand Djomy reste PENDING ========
+
+    @api.model
+    def _cron_djomy_cancel_stale_pending(self, batch_limit=100):
+        """Annule de force les tx Djomy `pending` trop anciennes.
+
+        Sur Odoo v16+, le portail masque le bouton "Payer" tant qu'une
+        `payment.transaction` en `pending` est rattachée à la facture.
+        Si Djomy garde une session en `PENDING` de son côté (bug provider,
+        timeout non signalé, coupure serveur Djomy), le client reste
+        bloqué : ni bouton Payer, ni bouton Annuler. Ce cron annule
+        de force les tx qui dépassent le délai configurable
+        `djomy.pending_auto_cancel_minutes` (défaut 120 min = 2h) — le
+        portail redevient utilisable et le zombie cleanup nettoie la
+        nouvelle tentative.
+
+        Mettre le paramètre à `0` désactive le cancel.
+        """
+        minutes = int(self.env['ir.config_parameter'].sudo().get_param(
+            'djomy.pending_auto_cancel_minutes', '120',
+        ))
+        if minutes <= 0:
+            return 0
+        cutoff = fields.Datetime.now() - timedelta(minutes=minutes)
+        # Filter on `create_date` (invariant), not `write_date`: any
+        # `write` on a still-`pending` tx (audit log, resync amount,
+        # etc.) would push `write_date` forward and the cron would
+        # never cancel it. A Djomy tx moves to `pending` seconds after
+        # creation (via `_set_pending`), so `create_date` is a reliable
+        # proxy for the moment the wait started.
+        stale = self.sudo().search([
+            ('provider_code', '=', 'djomy'),
+            ('state', '=', 'pending'),
+            ('create_date', '<', cutoff),
+        ], limit=batch_limit, order='create_date asc')
+        for tx in stale:
+            _logger.info(
+                "Djomy: auto-cancel stale pending tx=%s (pending since %s)",
+                tx.reference, tx.create_date,
+            )
+            tx._set_canceled(state_message=_(
+                "Transaction annulée automatiquement — en attente "
+                "depuis plus de %s minute(s).",
+            ) % minutes)
+        return len(stale)

@@ -13,6 +13,7 @@
         'views/payment_provider_views.xml',
         'data/payment_provider_data.xml',
         'data/ir_config_parameter.xml',
+        'data/ir_cron.xml',
     ],
     'assets': {
         'web.assets_frontend': [

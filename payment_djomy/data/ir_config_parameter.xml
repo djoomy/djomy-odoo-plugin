@@ -22,4 +22,15 @@
         <field name="value">True</field>
     </record>
 
+    <!--
+        Délai (en minutes) au-delà duquel une transaction Djomy
+        restée en `pending` est annulée automatiquement par le cron
+        `ir_cron_djomy_cancel_stale_pending`. Par défaut 120 min (2h).
+        Mettre `0` désactive le cancel forcé (le cron ne fait rien).
+    -->
+    <record id="icp_djomy_pending_auto_cancel_minutes" model="ir.config_parameter">
+        <field name="key">djomy.pending_auto_cancel_minutes</field>
+        <field name="value">120</field>
+    </record>
+
 </odoo>
