@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Paramètres système payment_djomy — défauts sécurisés upstream.
+
+    noupdate="1" : ne pas écraser une valeur configurée par l'admin
+    lors d'un `-u payment_djomy`. La désactivation de la vérification
+    HMAC (par exemple parce que Djomy ne signe pas correctement les
+    notifications) se fait via UI / shell / un autre module.
+-->
+<odoo noupdate="1">
+
+    <!--
+        Vérification HMAC du webhook Djomy.
+          - True  : signature obligatoire (défaut sécurisé).
+          - False : signature ignorée — le controller compense en
+                    interrogeant `GET /payments/{id}/status` côté
+                    Djomy pour récupérer le statut officiel avant de
+                    transitionner la transaction.
+    -->
+    <record id="icp_djomy_webhook_verify_signature" model="ir.config_parameter">
+        <field name="key">djomy.webhook_verify_signature</field>
+        <field name="value">True</field>
+    </record>
+
+</odoo>

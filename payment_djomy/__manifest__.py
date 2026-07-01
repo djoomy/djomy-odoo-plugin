@@ -12,6 +12,7 @@
         'views/payment_djomy_templates.xml',
         'views/payment_provider_views.xml',
         'data/payment_provider_data.xml',
+        'data/ir_config_parameter.xml',
     ],
     'assets': {
         'web.assets_frontend': [
