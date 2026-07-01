@@ -208,6 +208,19 @@ class DjomyController(http.Controller):
 
                 # Process the transaction
                 tx_sudo._process('djomy', data)
+                # Trigger post-processing immediately so the invoice is
+                # marked paid without waiting for the ~10-min core cron
+                # `cron_post_process_payment_tx`. The return URL relies
+                # on `/payment/status` (portal page) to do this — the
+                # webhook has no such external trigger.
+                if tx_sudo.state == 'done' and not tx_sudo.is_post_processed:
+                    try:
+                        tx_sudo._post_process()
+                    except Exception as exc:
+                        _logger.warning(
+                            "Djomy webhook: _post_process failed tx=%s: %s",
+                            tx_sudo.reference, exc,
+                        )
 
         return request.make_json_response({'status': 'ok'})
 
