@@ -139,6 +139,14 @@ class DjomyController(http.Controller):
         GET: Validation/health check for webhook registration.
         POST: Process actual webhook notifications.
         Signature header: X-Webhook-Signature: v1:<signature>
+
+        HMAC verification can be disabled via the system parameter
+        ``djomy.webhook_verify_signature`` (see ``_verify_webhook_signature``).
+        Whether the signature is checked or not, the controller ALWAYS
+        re-fetches the official status from Djomy via
+        ``GET /payments/{transactionId}/status`` before transitioning the
+        transaction state — this prevents a caller from forging a
+        ``{status: SUCCESS}`` payload when the signature check is off.
         """
         # Handle GET requests for webhook validation
         if request.httprequest.method == 'GET':
@@ -166,6 +174,38 @@ class DjomyController(http.Controller):
                 signature = request.httprequest.headers.get('X-Webhook-Signature', '')
                 self._verify_webhook_signature(signature, data, tx_sudo)
 
+                # Re-fetch the official status from Djomy to prevent a
+                # forged payload from moving the transaction to `done`
+                # when signature verification is disabled.
+                transaction_id = (
+                    data.get('transactionId')
+                    or data.get('data', {}).get('transactionId')
+                    or tx_sudo.provider_reference
+                )
+                if transaction_id:
+                    try:
+                        api_data = tx_sudo._send_api_request(
+                            'GET', f'payments/{transaction_id}/status'
+                        )
+                    except ValidationError as err:
+                        _logger.warning(
+                            "Djomy webhook: failed to fetch official status "
+                            "for tx=%s: %s", tx_sudo.reference, err,
+                        )
+                        return request.make_json_response(
+                            {'status': 'error', 'reason': 'api_unreachable'}
+                        )
+                    api_status = api_data.get('status', '').upper()
+                    if not api_status:
+                        _logger.warning(
+                            "Djomy webhook: Djomy returned no status for tx=%s",
+                            tx_sudo.reference,
+                        )
+                        return request.make_json_response(
+                            {'status': 'error', 'reason': 'no_official_status'}
+                        )
+                    data = {**data, **api_data, 'status': api_status}
+
                 # Process the transaction
                 tx_sudo._process('djomy', data)
 
@@ -176,7 +216,26 @@ class DjomyController(http.Controller):
         """Verify the webhook signature.
 
         Format: v1:<HMAC-SHA256(payload, clientSecret)>
+
+        Can be disabled via the system parameter
+        ``djomy.webhook_verify_signature`` (default ``True``). When set
+        to ``False``, a warning is logged and the check is skipped —
+        useful when Djomy is not (yet) sending a proper
+        ``X-Webhook-Signature`` header. In that case the caller of this
+        method MUST compensate by re-fetching the official payment
+        status from Djomy before transitioning the transaction (see
+        ``djomy_webhook``).
         """
+        verify = request.env['ir.config_parameter'].sudo().get_param(
+            'djomy.webhook_verify_signature', 'True',
+        )
+        if str(verify).lower() not in ('true', '1', 'yes'):
+            _logger.warning(
+                "Djomy webhook: HMAC verification DISABLED via "
+                "djomy.webhook_verify_signature=False"
+            )
+            return
+
         if not received_signature:
             _logger.warning("Received webhook without signature.")
             raise Forbidden()
