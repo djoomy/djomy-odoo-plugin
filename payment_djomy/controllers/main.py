@@ -155,7 +155,16 @@ class DjomyController(http.Controller):
             _logger.info("Webhook validation request from Djomy")
             return request.make_json_response({'status': 'ok'})
 
-        data = request.get_json_data()
+        # Read the RAW body: the HMAC must be computed on the exact bytes
+        # Djomy signed, never a re-serialized payload.
+        raw_body = request.httprequest.get_data() or b''
+        try:
+            data = json.loads(raw_body.decode('utf-8')) if raw_body else {}
+        except (ValueError, UnicodeDecodeError):
+            _logger.warning("Djomy webhook: invalid JSON body")
+            return request.make_json_response(
+                {'status': 'error', 'reason': 'bad_payload'}
+            )
         _logger.info("Webhook notification from Djomy:\n%s", pprint.pformat(data))
 
         event_type = data.get('eventType', '')
@@ -174,7 +183,7 @@ class DjomyController(http.Controller):
             if tx_sudo:
                 # Verify webhook signature
                 signature = request.httprequest.headers.get('X-Webhook-Signature', '')
-                self._verify_webhook_signature(signature, data, tx_sudo)
+                self._verify_webhook_signature(signature, raw_body, tx_sudo)
 
                 # Re-fetch the official status from Djomy to prevent a
                 # forged payload from moving the transaction to `done`
@@ -231,10 +240,10 @@ class DjomyController(http.Controller):
         return request.make_json_response({'status': 'ok'})
 
     @staticmethod
-    def _verify_webhook_signature(received_signature, payload, tx_sudo):
+    def _verify_webhook_signature(received_signature, raw_body, tx_sudo):
         """Verify the webhook signature.
 
-        Format: v1:<HMAC-SHA256(payload, clientSecret)>
+        Format: v1:<HMAC-SHA256(raw_body, clientSecret)>
 
         Can be disabled via the system parameter
         ``djomy.webhook_verify_signature`` (default ``True``). When set
@@ -265,11 +274,12 @@ class DjomyController(http.Controller):
         else:
             signature = received_signature
 
-        # Compute expected signature
-        payload_str = json.dumps(payload, separators=(',', ':'))
+        # Compute expected signature on the RAW body bytes
+        if isinstance(raw_body, str):
+            raw_body = raw_body.encode('utf-8')
         expected_signature = hmac.new(
             tx_sudo.provider_id.djomy_client_secret.encode('utf-8'),
-            payload_str.encode('utf-8'),
+            raw_body,
             hashlib.sha256
         ).hexdigest()
 
