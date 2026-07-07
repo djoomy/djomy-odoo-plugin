@@ -93,7 +93,9 @@ class DjomyController(http.Controller):
             if transaction_id:
                 # Query API to get actual status
                 try:
-                    api_data = tx_sudo._send_api_request(
+                    # Retry wrapper: refresh the (likely expired) access
+                    # token on 401 instead of failing the status check.
+                    api_data = tx_sudo.provider_id._djomy_send_request_with_retry(
                         'GET', f'payments/{transaction_id}/status'
                     )
                     # Use API status if URL status not available
@@ -184,7 +186,11 @@ class DjomyController(http.Controller):
                 )
                 if transaction_id:
                     try:
-                        api_data = tx_sudo._send_api_request(
+                        # Use the retry wrapper: the stored access token was
+                        # fetched at payment creation and is very likely
+                        # expired by the time the webhook fires. A direct
+                        # `_send_api_request` would 401 without refreshing.
+                        api_data = tx_sudo.provider_id._djomy_send_request_with_retry(
                             'GET', f'payments/{transaction_id}/status'
                         )
                     except ValidationError as err:
