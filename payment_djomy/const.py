@@ -10,7 +10,7 @@ SUPPORTED_CURRENCIES = [
 
 # Mapping of Djomy payment statuses to Odoo transaction states
 PAYMENT_STATUS_MAPPING = {
-    'pending': ['PENDING', 'INITIATED', 'PROCESSING', 'CREATED'],
+    'pending': ['PENDING', 'INITIATED', 'PROCESSING', 'CREATED', 'REDIRECTED'],
     'done': ['SUCCESS', 'SUCCESSFUL'],
     'cancel': ['CANCELLED'],
     'error': ['FAILED', 'ERROR'],
