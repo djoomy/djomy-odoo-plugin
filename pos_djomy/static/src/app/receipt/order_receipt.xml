@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="pos_djomy.OrderReceipt" t-inherit="point_of_sale.OrderReceipt" t-inherit-mode="extension">
+        <xpath expr="//div[hasclass('before-footer')]" position="before">
+            <div t-if="order.uiState?.djomyBill and !order.finalized"
+                 class="djomy-bill-qr pos-receipt-center-align text-center pt-3">
+                <div class="fw-bolder">Payer par mobile money</div>
+                <img t-att-src="order.uiState.djomyBill.qr" alt="QR Djomy"
+                     style="width: 180px; height: 180px;"/>
+                <div style="font-size: 75%;">
+                    Scannez ce code avec l'appareil photo de votre téléphone,
+                    puis payez par Orange Money, MTN MoMo ou carte.
+                    <br/>Montant dû : <strong><t t-esc="formatCurrency(order.uiState.djomyBill.amount)"/></strong>
+                    (chacun peut payer sa part).
+                    <br/>Réf. <t t-esc="order.uiState.djomyBill.reference"/>
+                </div>
+            </div>
+        </xpath>
+    </t>
+</templates>

@@ -15,6 +15,8 @@ class TestDjomyZombieCleanup(TransactionCase):
 
     def setUp(self):
         super().setUp()
+        if 'sale.order' not in self.env:
+            self.skipTest("le module sale n'est pas installe")
         self.provider = self.env.ref('payment_djomy.payment_provider_djomy')
         self.provider.write({
             'djomy_client_id': 'ci_test',

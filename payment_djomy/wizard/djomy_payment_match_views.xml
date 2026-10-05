@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="djomy_payment_match_wizard_form" model="ir.ui.view">
+        <field name="name">djomy.payment.match.wizard.form</field>
+        <field name="model">djomy.payment.match.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Rattacher un paiement Djomy">
+                <group>
+                    <group>
+                        <field name="target_name"/>
+                        <field name="expected_amount" widget="monetary"/>
+                        <field name="currency_id" invisible="1"/>
+                        <field name="res_model" invisible="1"/>
+                        <field name="res_id" invisible="1"/>
+                        <field name="company_id" invisible="1"/>
+                        <field name="provider_name"/>
+                    </group>
+                    <group>
+                        <field name="source"/>
+                        <field name="link_reference"
+                               invisible="source == 'all'"
+                               required="source == 'link'"/>
+                        <field name="date_from"/>
+                        <field name="date_to"/>
+                        <field name="max_pages" invisible="source != 'all'"/>
+                    </group>
+                </group>
+                <div class="mb-2">
+                    <button name="action_refresh" type="object" string="Charger les paiements"
+                            class="btn-primary" icon="fa-refresh"/>
+                    <span class="ms-3 text-muted"><field name="note" nolabel="1"/></span>
+                </div>
+                <field name="line_ids" nolabel="1">
+                    <list create="0" edit="0" delete="0"
+                          decoration-success="is_success and not matched_on"
+                          decoration-muted="not is_success or matched_on">
+                        <field name="paid_at"/>
+                        <field name="paid_amount" sum="Total"/>
+                        <field name="currency_code"/>
+                        <field name="payment_method_label" string="Moyen"/>
+                        <field name="payer_identifier"/>
+                        <field name="status"/>
+                        <field name="merchant_reference" optional="hide"/>
+                        <field name="link_reference" optional="hide"/>
+                        <field name="transaction_id" optional="show"/>
+                        <field name="matched_on"/>
+                        <field name="is_success" column_invisible="1"/>
+                        <button name="action_match" type="object" string="Rattacher"
+                                class="btn-primary" icon="fa-link"
+                                invisible="not is_success or matched_on"/>
+                    </list>
+                </field>
+                <footer>
+                    <button string="Fermer" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="account_move_form_inherit_djomy" model="ir.ui.view">
+        <field name="name">account.move.form.inherit.djomy</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//button[@id='account_invoice_payment_secondary_btn']" position="after">
+                <button name="action_djomy_match_payment" type="object"
+                        string="Rattacher un paiement Djomy" icon="fa-mobile"
+                        invisible="state != 'posted' or payment_state not in ('not_paid', 'partial') or move_type not in ('out_invoice', 'out_receipt')"
+                        groups="account.group_account_invoice"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

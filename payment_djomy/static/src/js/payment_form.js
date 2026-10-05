@@ -29,7 +29,11 @@ patch(PaymentForm.prototype, {
     },
 
     /**
-     * Process Djomy payment by capturing the phone and calling custom route.
+     * Cree le lien de paiement Djomy puis y envoie le client.
+     *
+     * Le numero de telephone est optionnel : s'il est renseigne, Djomy
+     * envoie aussi le lien par SMS, ce qui permet au client de payer plus
+     * tard depuis son telephone si la page est fermee.
      *
      * @override
      */
@@ -39,21 +43,10 @@ patch(PaymentForm.prototype, {
             return;
         }
 
-        // Get the phone number from the inline form
         const phoneInput = document.querySelector('#o_djomy_phone');
-        const phone = phoneInput?.value?.trim();
-
-        if (!phone) {
-            this._displayErrorDialog(
-                _t("Erreur"),
-                _t("Le numero de telephone est requis pour le paiement Djomy")
-            );
-            this._enableButton();
-            return;
-        }
+        const phone = phoneInput?.value?.trim() || null;
 
         try {
-            // Call custom route with the phone number
             const result = await this.waitFor(rpc('/payment/djomy/process', {
                 reference: processingValues.reference,
                 phone: phone,
@@ -65,7 +58,7 @@ patch(PaymentForm.prototype, {
                 return;
             }
 
-            // Redirect to Djomy gateway
+            // Page de paiement Djomy (lien de paiement)
             window.location.href = result.redirect_url;
 
         } catch (error) {

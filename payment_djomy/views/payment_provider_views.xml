@@ -20,6 +20,49 @@
                            required="code == 'djomy' and state == 'enabled'"/>
                 </group>
             </group>
+            <group name="provider_config" position="inside">
+                <group invisible="code != 'djomy'" name="djomy_links" string="Liens de paiement Djomy">
+                    <field name="djomy_link_expiry_minutes"/>
+                    <field name="djomy_allowed_methods" placeholder="OM, MOMO, CARD"/>
+                </group>
+                <group invisible="code != 'djomy'" name="djomy_static_link" string="QR code statique du commerce">
+                    <field name="djomy_static_link_reference" readonly="1"/>
+                    <field name="djomy_static_link_url" widget="url" readonly="1"/>
+                    <field name="djomy_static_link_qr" widget="image"
+                           options="{'size': [200, 200]}" nolabel="1" colspan="2"
+                           invisible="not djomy_static_link_url"/>
+                    <div colspan="2">
+                        <button name="action_djomy_generate_static_link" type="object"
+                                string="Générer le lien statique" class="btn-primary"
+                                icon="fa-qrcode"
+                                invisible="state == 'disabled'"
+                                confirm="Un nouveau lien statique remplace l'ancien : les QR codes déjà imprimés cesseront de fonctionner. Continuer ?"/>
+                        <p class="text-muted small mt-2">
+                            Lien à usage multiple, sans montant ni expiration : à imprimer et afficher en caisse.
+                            Les paiements reçus par ce QR se rattachent ensuite depuis la commande ou la facture
+                            (bouton « Rattacher un paiement Djomy »).
+                        </p>
+                    </div>
+                </group>
+            </group>
+        </field>
+    </record>
+
+    <record id="payment_transaction_form" model="ir.ui.view">
+        <field name="name">Djomy Transaction Form</field>
+        <field name="model">payment.transaction</field>
+        <field name="inherit_id" ref="payment.payment_transaction_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header/button[@name='action_void']" position="after">
+                <button type="object" name="action_djomy_sync_status"
+                        string="Synchroniser avec Djomy" icon="fa-refresh"
+                        invisible="provider_code != 'djomy' or state not in ('draft', 'pending')"/>
+            </xpath>
+            <xpath expr="//field[@name='provider_reference']" position="after">
+                <field name="djomy_payment_link_reference" invisible="provider_code != 'djomy'"/>
+                <field name="djomy_payment_link_url" widget="url" invisible="provider_code != 'djomy' or not djomy_payment_link_url"/>
+                <field name="djomy_payment_method" invisible="provider_code != 'djomy' or not djomy_payment_method"/>
+            </xpath>
         </field>
     </record>
 
