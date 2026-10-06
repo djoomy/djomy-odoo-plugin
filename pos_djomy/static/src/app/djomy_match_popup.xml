@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="pos_djomy.DjomyMatchPopup">
+        <Dialog title="props.title" size="'lg'">
+            <div class="djomy-match-popup">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <div>
+                        Montant attendu :
+                        <strong t-esc="formatAmount(props.expectedAmount)"/>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <select class="form-select form-select-sm" t-on-change="setHours" t-att-value="state.hours">
+                            <option value="2">2 dernières heures</option>
+                            <option value="12">12 dernières heures</option>
+                            <option value="24" selected="selected">24 dernières heures</option>
+                            <option value="72">3 derniers jours</option>
+                            <option value="168">7 derniers jours</option>
+                            <option value="720">30 derniers jours</option>
+                        </select>
+                        <button class="btn btn-sm btn-outline-secondary" t-on-click="refresh" t-att-disabled="state.loading">
+                            <i class="fa fa-refresh"/>
+                        </button>
+                    </div>
+                </div>
+
+                <div t-if="state.error" class="alert alert-danger" t-esc="state.error"/>
+
+                <div t-if="state.loading" class="text-center text-muted py-4">
+                    <div class="spinner-border spinner-border-sm text-primary me-2" role="status"/>
+                    Chargement des paiements Djomy...
+                </div>
+
+                <div t-elif="!state.payments.length and !state.error" class="text-center text-muted py-4">
+                    Aucun paiement Djomy reçu sur cette période.
+                </div>
+
+                <div t-else="" class="table-responsive" style="max-height: 50vh; overflow-y: auto;">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Heure</th>
+                                <th class="text-end">Montant</th>
+                                <th>Canal</th>
+                                <th>Payeur</th>
+                                <th>Réf.</th>
+                                <th>Statut</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="state.payments" t-as="p" t-key="p.transactionId">
+                                <tr t-att-class="{
+                                        'table-primary': state.selected === p.transactionId,
+                                        'text-muted': !isSelectable(p),
+                                        'fw-bold': matchesAmount(p) and isSelectable(p),
+                                    }"
+                                    t-att-style="isSelectable(p) ? 'cursor: pointer;' : ''"
+                                    t-on-click="() => this.select(p)">
+                                    <td t-esc="p.paidAt"/>
+                                    <td class="text-end" t-esc="formatAmount(p.paidAmount)"/>
+                                    <td t-esc="p.paymentMethodLabel"/>
+                                    <td t-esc="p.payerIdentifier"/>
+                                    <td class="text-muted small">
+                                        <span t-if="p.source === 'shop'" class="badge text-bg-primary me-1">QR boutique</span>
+                                        <span t-elif="p.source === 'global'" class="badge text-bg-secondary me-1">QR général</span>
+                                        <t t-esc="p.merchantReference || p.linkReference"/>
+                                    </td>
+                                    <td>
+                                        <span t-if="p.matchedOn" class="badge text-bg-secondary">
+                                            Déjà encaissé (<t t-esc="p.matchedOn"/>)
+                                        </span>
+                                        <span t-elif="p.isDone" class="badge text-bg-success">Payé</span>
+                                        <span t-else="" class="badge text-bg-warning" t-esc="p.status"/>
+                                    </td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <t t-set-slot="footer">
+                <button class="btn btn-secondary btn-lg" t-on-click="cancel">Annuler</button>
+                <button class="btn btn-primary btn-lg" t-on-click="confirm" t-att-disabled="!state.selected">
+                    <i class="fa fa-link me-2"/>Rattacher ce paiement
+                </button>
+            </t>
+        </Dialog>
+    </t>
+</templates>

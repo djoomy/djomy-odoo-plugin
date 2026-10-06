@@ -6,7 +6,6 @@
         <field name="inherit_id" ref="point_of_sale.pos_payment_method_view_form"/>
         <field name="arch" type="xml">
             <xpath expr="//field[@name='use_payment_terminal']" position="after">
-                <!-- Djomy Payment Method Selection -->
                 <field name="djomy_payment_method"
                        invisible="use_payment_terminal != 'djomy'"
                        required="use_payment_terminal == 'djomy'"/>
@@ -18,6 +17,19 @@
                             string="Configure Djomy provider credentials"
                             class="btn-link"/>
                 </div>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_pos_pos_form_inherit_djomy" model="ir.ui.view">
+        <field name="name">pos.order.form.inherit.djomy</field>
+        <field name="model">pos.order</field>
+        <field name="inherit_id" ref="point_of_sale.view_pos_pos_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header/button[@name='action_pos_order_invoice']" position="after">
+                <button name="action_djomy_match_payment" type="object"
+                        string="Rattacher un paiement Djomy" icon="fa-mobile"
+                        invisible="state != 'draft'"/>
             </xpath>
         </field>
     </record>

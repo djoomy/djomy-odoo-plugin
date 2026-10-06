@@ -1,0 +1,178 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* payment_djomy
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0-20251106\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-08-02 05:45+0000\n"
+"PO-Revision-Date: 2026-08-02 05:45+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: payment_djomy
+#. odoo-python
+#: code:addons/payment_djomy/models/payment_transaction.py:0
+msgid "An error occurred during the processing of your payment (status %s)."
+msgstr "Une erreur s'est produite pendant le traitement de votre paiement (statut %s)."
+
+#. module: payment_djomy
+#: model_terms:ir.ui.view,arch_db:payment_djomy.payment_provider_form
+msgid "Client ID"
+msgstr "Identifiant client"
+
+#. module: payment_djomy
+#: model_terms:ir.ui.view,arch_db:payment_djomy.payment_provider_form
+msgid "Client Secret"
+msgstr "Clé secrète"
+
+#. module: payment_djomy
+#: model:ir.model.fields,field_description:payment_djomy.field_payment_provider__code
+msgid "Code"
+msgstr "Code"
+
+#. module: payment_djomy
+#: model:ir.model.fields,field_description:payment_djomy.field_payment_provider__display_name
+#: model:ir.model.fields,field_description:payment_djomy.field_payment_transaction__display_name
+msgid "Display Name"
+msgstr "Nom d'affichage"
+
+#. module: payment_djomy
+#: model:ir.model.fields.selection,name:payment_djomy.selection__payment_provider__code__djomy
+#: model:payment.method,name:payment_djomy.payment_method_djomy
+#: model:payment.provider,name:payment_djomy.payment_provider_djomy
+msgid "Djomy"
+msgstr "Djomy"
+
+#. module: payment_djomy
+#: model:ir.actions.server,name:payment_djomy.ir_cron_djomy_cancel_stale_pending_ir_actions_server
+msgid "Djomy - Cancel Stale Pending Transactions"
+msgstr "Djomy : annuler les transactions en attente périmées"
+
+#. module: payment_djomy
+#. odoo-python
+#: code:addons/payment_djomy/models/payment_provider.py:0
+msgid "Djomy API error (HTTP %s)"
+msgstr "Erreur de l'API Djomy (HTTP %s)"
+
+#. module: payment_djomy
+#: model:ir.model.fields,field_description:payment_djomy.field_payment_provider__djomy_access_token
+msgid "Djomy Access Token"
+msgstr "Jeton d'accès Djomy"
+
+#. module: payment_djomy
+#: model:ir.model.fields,field_description:payment_djomy.field_payment_provider__djomy_client_id
+msgid "Djomy Client ID"
+msgstr "Identifiant client Djomy"
+
+#. module: payment_djomy
+#: model:ir.model.fields,field_description:payment_djomy.field_payment_provider__djomy_client_secret
+msgid "Djomy Client Secret"
+msgstr "Clé secrète Djomy"
+
+#. module: payment_djomy
+#. odoo-python
+#: code:addons/payment_djomy/models/payment_provider.py:0
+msgid "Djomy: Invalid API response (HTTP %s)"
+msgstr "Djomy : réponse d'API invalide (HTTP %s)"
+
+#. module: payment_djomy
+#. odoo-python
+#: code:addons/payment_djomy/models/payment_provider.py:0
+msgid ""
+"Djomy: Partner Domain is required in Production mode. Please configure your "
+"domain registered with Djomy."
+msgstr "Djomy : le domaine partenaire est obligatoire en mode Production. Renseignez le domaine que vous avez déclaré auprès de Djomy."
+
+#. module: payment_djomy
+#. odoo-javascript
+#: code:addons/payment_djomy/static/src/js/payment_form.js:0
+msgid "Erreur"
+msgstr "Erreur"
+
+#. module: payment_djomy
+#. odoo-javascript
+#: code:addons/payment_djomy/static/src/js/payment_form.js:0
+msgid "Erreur de paiement"
+msgstr "Erreur de paiement"
+
+#. module: payment_djomy
+#: model_terms:ir.ui.view,arch_db:payment_djomy.inline_form
+msgid "Ex: 620123456"
+msgstr "Ex. : 620123456"
+
+#. module: payment_djomy
+#: model:ir.model.fields,field_description:payment_djomy.field_payment_provider__id
+#: model:ir.model.fields,field_description:payment_djomy.field_payment_transaction__id
+msgid "ID"
+msgstr "ID"
+
+#. module: payment_djomy
+#. odoo-javascript
+#: code:addons/payment_djomy/static/src/js/payment_form.js:0
+msgid "Le numéro de téléphone est requis pour le paiement Djomy"
+msgstr "Le numéro de téléphone est obligatoire pour un paiement Djomy"
+
+#. module: payment_djomy
+#: model:ir.model.fields,field_description:payment_djomy.field_payment_provider__djomy_partner_domain
+#: model_terms:ir.ui.view,arch_db:payment_djomy.payment_provider_form
+msgid "Partner Domain"
+msgstr "Domaine partenaire"
+
+#. module: payment_djomy
+#: model:ir.model,name:payment_djomy.model_payment_provider
+msgid "Payment Provider"
+msgstr "Fournisseur de paiement"
+
+#. module: payment_djomy
+#: model:ir.model,name:payment_djomy.model_payment_transaction
+msgid "Payment Transaction"
+msgstr "Transaction de paiement"
+
+#. module: payment_djomy
+#: model:ir.model.fields,help:payment_djomy.field_payment_provider__djomy_client_id
+msgid "The client ID provided by Djomy."
+msgstr "L'identifiant client fourni par Djomy."
+
+#. module: payment_djomy
+#: model:ir.model.fields,help:payment_djomy.field_payment_provider__code
+msgid "The technical code of this payment provider."
+msgstr "Le code technique de ce fournisseur de paiement."
+
+#. module: payment_djomy
+#. odoo-python
+#: code:addons/payment_djomy/models/payment_transaction.py:0
+msgid "Unknown payment status: %s"
+msgstr "Statut de paiement inconnu : %s"
+
+#. module: payment_djomy
+#: model_terms:payment.provider,cancel_msg:payment_djomy.payment_provider_djomy
+msgid "Votre paiement a été annulé."
+msgstr "Votre paiement a été annulé."
+
+#. module: payment_djomy
+#: model_terms:payment.provider,auth_msg:payment_djomy.payment_provider_djomy
+msgid "Votre paiement a été autorisé."
+msgstr "Votre paiement a été autorisé."
+
+#. module: payment_djomy
+#: model_terms:payment.provider,pending_msg:payment_djomy.payment_provider_djomy
+msgid "Votre paiement a été traité mais est en attente d’approbation."
+msgstr "Votre paiement a été traité mais attend une approbation."
+
+#. module: payment_djomy
+#: model_terms:payment.provider,done_msg:payment_djomy.payment_provider_djomy
+msgid "Votre paiement a été traité."
+msgstr "Votre paiement a été traité."
+
+#. module: payment_djomy
+#: model:ir.model.fields,help:payment_djomy.field_payment_provider__djomy_partner_domain
+msgid ""
+"Your domain registered and validated by Djomy. Optional in Test mode, "
+"required in Production."
+msgstr "Le domaine que vous avez déclaré et fait valider par Djomy. Facultatif en mode Test, obligatoire en Production."

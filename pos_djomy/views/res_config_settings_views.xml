@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form_inherit_djomy" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.pos.djomy</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="point_of_sale.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//block[@id='pos_payment_section']" position="inside">
+                <setting id="pos_djomy_static_link" string="QR Djomy de la boutique"
+                         help="QR à usage multiple, sans montant, propre à cette caisse : à imprimer et afficher au comptoir. Les paiements reçus apparaissent en premier dans « Déjà payé » et se rattachent aussi depuis la facture ou la commande. S'ajoute au QR global du fournisseur Djomy.">
+                    <div class="content-group mt16">
+                        <div class="row" invisible="not pos_djomy_static_link_url">
+                            <label for="pos_djomy_static_link_reference" class="col-lg-4 o_light_label"/>
+                            <field name="pos_djomy_static_link_reference" readonly="1"/>
+                        </div>
+                        <div class="row" invisible="not pos_djomy_static_link_url">
+                            <label for="pos_djomy_static_link_url" class="col-lg-4 o_light_label"/>
+                            <field name="pos_djomy_static_link_url" widget="url" readonly="1"/>
+                        </div>
+                        <field name="pos_djomy_static_link_qr" widget="image" readonly="1"
+                               options="{'size': [160, 160]}" nolabel="1"
+                               invisible="not pos_djomy_static_link_url"/>
+                        <button name="pos_djomy_generate_static_link" type="object"
+                                string="Générer le QR de la boutique" class="btn-primary mt-2"
+                                icon="fa-qrcode"
+                                confirm="Un nouveau QR remplace l'ancien : les QR déjà imprimés pour cette boutique cesseront de fonctionner. Continuer ?"/>
+                    </div>
+                </setting>
+            </xpath>
+        </field>
+    </record>
+</odoo>

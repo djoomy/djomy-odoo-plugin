@@ -1,0 +1,16 @@
+# Traductions francaises completees pour DooKonect.
+# Genere par scripts/i18n/completer_traductions.py : ne pas modifier a la main,
+# corriger traductions_manuelles.json puis relancer le script.
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Language: fr\n"
+"Plural-Forms: nplurals=3; plural=(n == 0 || n == 1) ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;\n"
+
+#. module: payment_djomy
+#: model:ir.model,name:payment_djomy.model_account_move
+msgid "Journal Entry"
+msgstr "Pièce comptable"

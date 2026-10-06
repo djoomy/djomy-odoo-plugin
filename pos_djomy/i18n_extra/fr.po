@@ -1,0 +1,59 @@
+# Traductions francaises completees pour DooKonect.
+# Genere par scripts/i18n/completer_traductions.py : ne pas modifier a la main,
+# corriger traductions_manuelles.json puis relancer le script.
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Language: fr\n"
+"Plural-Forms: nplurals=3; plural=(n == 0 || n == 1) ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;\n"
+
+#. module: pos_djomy
+#: model_terms:ir.ui.view,arch_db:pos_djomy.pos_payment_method_view_form_inherit_pos_djomy
+msgid "Configure Djomy provider credentials"
+msgstr "Configurer les identifiants du fournisseur Djomy"
+
+#. module: pos_djomy
+#. odoo-python
+#: code:addons/pos_djomy/models/pos_payment_method.py:0
+msgid "Djomy Configuration"
+msgstr "Configuration Djomy"
+
+#. module: pos_djomy
+#. odoo-python
+#: code:addons/pos_djomy/models/pos_payment_method.py:0
+msgid "Djomy payment provider for company %s is missing"
+msgstr "Le fournisseur de paiement Djomy de la société %s est introuvable"
+
+#. module: pos_djomy
+#. odoo-python
+#: code:addons/pos_djomy/models/pos_payment_method.py:0
+msgid "Do not have access to check Djomy payment status"
+msgstr "Vous n'avez pas le droit de vérifier l'état d'un paiement Djomy"
+
+#. module: pos_djomy
+#. odoo-python
+#: code:addons/pos_djomy/models/pos_payment_method.py:0
+msgid "Do not have access to create Djomy payment links"
+msgstr "Vous n'avez pas le droit de créer des liens de paiement Djomy"
+
+#. module: pos_djomy
+#. odoo-python
+#: code:addons/pos_djomy/models/pos_payment_method.py:0
+msgid "Do not have access to create Djomy payments"
+msgstr "Vous n'avez pas le droit de créer des paiements Djomy"
+
+#. modules: pos_djomy, pos_self_order
+#. odoo-javascript
+#: code:addons/pos_djomy/static/src/app/djomy_qr_popup.xml:0
+#: code:addons/pos_self_order/static/src/app/pages/confirmation_page/confirmation_page.xml:0
+msgid "Loading..."
+msgstr "En cours de chargement..."
+
+#. module: pos_djomy
+#. odoo-javascript
+#: code:addons/pos_djomy/static/src/app/djomy_qr_popup.xml:0
+msgid "QR Code"
+msgstr "Code QR"

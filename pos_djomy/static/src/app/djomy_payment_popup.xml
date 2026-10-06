@@ -3,50 +3,88 @@
     <t t-name="pos_djomy.DjomyAmountPopup">
         <Dialog title="props.title" size="'md'">
             <div class="djomy-amount-popup">
-                <!-- Amount Input -->
-                <div class="mb-4">
-                    <label for="djomy_amount" class="form-label fw-bold">
-                        Montant a payer
-                    </label>
+                <!-- Parcours -->
+                <div class="mb-3" t-if="props.modes.length > 1">
+                    <label class="form-label fw-bold">Comment le client paie-t-il ?</label>
+                    <div class="d-flex flex-wrap gap-2">
+                        <t t-foreach="props.modes" t-as="mode" t-key="mode.code">
+                            <button type="button"
+                                    class="btn btn-lg flex-fill"
+                                    t-att-class="state.mode === mode.code ? 'btn-primary' : 'btn-outline-secondary'"
+                                    t-on-click="() => this.setMode(mode.code)">
+                                <i t-att-class="'fa me-2 ' + mode.icon"/>
+                                <t t-esc="mode.label"/>
+                            </button>
+                        </t>
+                    </div>
+                </div>
+
+                <!-- Rappel du QR de la note -->
+                <div t-if="isBill and props.billInfo" class="alert alert-info small">
+                    <i class="fa fa-file-text-o me-1"/>
+                    Un QR de paiement a été imprimé sur la note pour
+                    <strong><t t-esc="props.billInfo.amount"/> <t t-esc="props.currency.symbol"/></strong>
+                    (réf. <t t-esc="props.billInfo.reference"/>). La caisse attend ce paiement.
+                </div>
+
+                <!-- Montant -->
+                <div class="mb-3" t-if="!isMatch">
+                    <label for="djomy_amount" class="form-label fw-bold">Montant à encaisser</label>
                     <div class="input-group input-group-lg">
-                        <input
-                            type="number"
-                            class="form-control form-control-lg text-end"
-                            id="djomy_amount"
-                            t-ref="amountInput"
-                            t-att-value="state.amount"
-                            t-on-input="onAmountChange"
-                            t-on-keydown="onKeydown"
-                            min="1"
-                            step="any"
-                        />
+                        <input type="number"
+                               class="form-control form-control-lg text-end"
+                               id="djomy_amount"
+                               t-ref="amountInput"
+                               t-att-value="state.amount"
+                               t-att-readonly="isBill"
+                               t-on-input="onAmountChange"
+                               t-on-keydown="onKeydown"
+                               min="1"
+                               step="any"/>
                         <span class="input-group-text" t-esc="props.currency.symbol"/>
                     </div>
                 </div>
 
-                <!-- Phone Number Input (Optional) -->
-                <div class="mb-3">
+                <!-- Operateur du client -->
+                <div class="mb-3" t-if="isDirect">
+                    <label for="djomy_method" class="form-label fw-bold">Opérateur du client</label>
+                    <select id="djomy_method" class="form-select form-select-lg"
+                            t-att-value="state.method" t-on-change="setMethod">
+                        <t t-foreach="props.methods" t-as="m" t-key="m.code">
+                            <option t-att-value="m.code" t-att-selected="m.code === state.method">
+                                <t t-esc="m.label"/>
+                            </option>
+                        </t>
+                    </select>
+                </div>
+
+                <!-- Telephone -->
+                <div class="mb-3" t-if="!isBill and !isMatch">
                     <label for="djomy_phone" class="form-label fw-bold">
-                        Numero de telephone
-                        <span class="text-muted fw-normal">(optionnel)</span>
+                        <t t-if="isAccountNumber">Numéro de compte <t t-esc="selectedMethod.label"/></t>
+                        <t t-else="">Numéro du client</t>
                     </label>
-                    <input
-                        type="tel"
-                        class="form-control"
-                        id="djomy_phone"
-                        t-att-value="state.phoneNumber"
-                        t-on-input="onPhoneChange"
-                        t-on-keydown="onKeydown"
-                        placeholder="00224 6XX XXX XXX"
-                    />
+                    <input type="tel"
+                           class="form-control form-control-lg"
+                           id="djomy_phone"
+                           t-att-value="state.phoneNumber"
+                           t-on-input="onPhoneChange"
+                           t-on-keydown="onKeydown"
+                           t-att-placeholder="isAccountNumber ? 'Numéro de compte' : '00224 6XX XXX XXX'"/>
                     <div class="form-text text-muted">
-                        Si renseigne, le lien de paiement sera envoye par SMS au client.
+                        <t t-if="isAccountNumber">
+                            Le client recevra un code OTP à vous communiquer.
+                        </t>
+                        <t t-else="">
+                            Le client recevra une demande de confirmation sur son téléphone.
+                        </t>
                     </div>
                 </div>
 
-                <div class="alert alert-info small mb-0">
+                <div t-if="isMatch" class="alert alert-info small mb-0">
                     <i class="fa fa-info-circle me-1"/>
-                    Le client scannera le QR code ou recevra un SMS pour payer.
+                    Le client a déjà payé (QR affiché en boutique, QR de sa note) : choisissez son
+                    paiement dans la liste à l'écran suivant. Le montant encaissé sera celui du paiement.
                 </div>
             </div>
 
@@ -54,12 +92,11 @@
                 <button class="btn btn-secondary btn-lg" t-on-click="cancel">
                     Annuler
                 </button>
-                <button
-                    class="btn btn-primary btn-lg"
-                    t-on-click="confirm"
-                    t-att-disabled="state.amount &lt;= 0">
-                    <i class="fa fa-qrcode me-2"/>
-                    Generer QR Code
+                <button class="btn btn-primary btn-lg"
+                        t-on-click="confirm"
+                        t-att-disabled="!canConfirm">
+                    <i t-att-class="'fa me-2 ' + (isBill ? 'fa-qrcode' : isMatch ? 'fa-link' : 'fa-mobile')"/>
+                    <t t-esc="confirmLabel"/>
                 </button>
             </t>
         </Dialog>

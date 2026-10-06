@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="pos_djomy.DjomyOtpPopup">
+        <Dialog title="props.title" size="'sm'">
+            <div class="djomy-otp-popup text-center">
+                <div class="mb-2">
+                    <span class="fs-4 fw-bold text-primary" t-esc="formattedAmount"/>
+                </div>
+                <p class="text-muted small">
+                    Le client a reçu un code <t t-if="props.methodLabel"><t t-esc="props.methodLabel"/></t>
+                    sur son téléphone. Saisissez-le pour confirmer le paiement.
+                </p>
+                <input type="text" inputmode="numeric" autocomplete="one-time-code"
+                       class="form-control form-control-lg text-center fs-2 letter-spacing-2"
+                       t-ref="pinInput"
+                       t-att-value="state.pin"
+                       t-on-input="onInput"
+                       t-on-keydown="onKeydown"
+                       maxlength="6"
+                       placeholder="••••"/>
+                <div t-if="state.error" class="text-danger small mt-2" t-esc="state.error"/>
+            </div>
+            <t t-set-slot="footer">
+                <button class="btn btn-secondary btn-lg" t-on-click="cancel">Annuler</button>
+                <button class="btn btn-primary btn-lg" t-on-click="confirm" t-att-disabled="!isValid">
+                    <i class="fa fa-check me-2"/>Confirmer
+                </button>
+            </t>
+        </Dialog>
+    </t>
+</templates>

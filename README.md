@@ -1,152 +1,114 @@
 # Djomy Odoo Plugin
 
-Official Odoo modules for integrating [Djomy](https://djomy.africa) mobile money payments.
+Official Odoo 19 modules for [Djomy](https://djomy.africa), the West African mobile
+money aggregator (Orange Money, MTN Mobile Money, Kulu, PayCard, bank cards).
 
-Djomy is a payment aggregator for West Africa supporting **Orange Money**, **MTN Mobile Money**, and **Kulu**.
+| Module | Role | Where |
+|---|---|---|
+| [payment_djomy](./payment_djomy/) | payment provider, API client, webhook, synchronisation, manual payment matching | customer portal, eCommerce, back office |
+| [pos_djomy](./pos_djomy/) | cashier checkout (operator + customer number, PayCard OTP), QR on the bill, "already paid" matching, per-shop QR | Point of Sale |
 
-## Modules
+Each module has its own README (in French, the language of the merchants these
+modules are built for) with the detailed configuration, flows and tests.
 
-| Module | Description | Odoo Version |
-|--------|-------------|--------------|
-| [payment_djomy](./payment_djomy/) | Payment provider for e-commerce/invoicing | 19.0 |
-| [pos_djomy](./pos_djomy/) | Point of Sale integration with QR code | 19.0 |
+## What the modules do
 
-## Features
+### Portal and eCommerce (`payment_djomy`)
 
-### E-Commerce & Invoicing (`payment_djomy`)
-- Online payments via Djomy checkout page
-- Webhook notifications for payment status
-- Automatic token management
-- Multi-currency support (GNF, XOF, EUR, USD)
+- **Payment link per transaction** (`POST /v1/links`, configurable validity): the
+  customer is redirected to the Djomy payment page; a link sent by SMS in the morning
+  is still payable in the afternoon.
+- **Return and webhook** (V1 and V2 payloads, HMAC-SHA256 signature on the raw body):
+  the status is always re-read from `GET /v1/payments/{id}/status` before a
+  transaction is confirmed. The first to arrive wins, the other is idempotent.
+- **Synchronisation**: a "Synchronise with Djomy" button on the transaction, a
+  reconciliation cron (every 10 min) for lost webhooks, and a stale-pending
+  cancellation cron that re-synchronises before cancelling.
+- **Manual matching**: "Attach a Djomy payment" on customer invoices and POS orders.
+  The wizard lists every payment received by the merchant over a period
+  (`GET /v1/payments`, 100 per page, whatever the link it came from) or the payments
+  of one link, re-checks the status, then books an offline transaction and its
+  accounting payment. A `transactionId` can only be matched once.
+- **Static QR** (optional): a multi-use, no-amount link to print and display at the
+  counter.
 
 ### Point of Sale (`pos_djomy`)
-- QR code payment flow
-- Optional SMS with payment link
-- Real-time status polling
-- Support for Orange Money, MTN MoMo, Kulu
+
+- **Direct checkout**: the cashier picks the customer's operator (Orange Money, MTN
+  MoMo, PayCard) and types the number. Djomy pushes a confirmation to the phone
+  (OM, MoMo) or sends an OTP to the customer that the cashier types in (PayCard).
+  `POST /v1/payments`, status polled every 3 s.
+- **QR on the bill**: printing an unpaid order creates a multi-use link and prints its
+  QR with the amount due. The bill is **shared**: several guests scan the same QR
+  and each pays their share; the register sums the successful payments, books one
+  payment line per Djomy payment, and lets the cashier collect what has been received
+  and complete otherwise. An overpayment is capped and reported.
+- **Already paid**: the customer paid a static QR, or the bill QR after another
+  checkout. The cashier picks the payment among the recent ones (shop QR first), it
+  is re-verified and booked at the paid amount.
+- **Per-shop QR**: each POS configuration can generate its own static QR in the POS
+  settings, in addition to the merchant-wide one; payments are tagged "shop QR" /
+  "general QR".
+- Guard rails: one `transactionId` per payment line (model constraint), already
+  matched payments greyed out and refused, amounts above the remaining due refused.
+
+## Djomy endpoints used
+
+| Endpoint | Used for |
+|---|---|
+| `POST /v1/auth` | bearer token, cached with its expiry, refreshed on 401 |
+| `POST /v1/links` | payment links: portal, bill QR, static QR. Multi-use links always carry a `usageLimit`: without it Djomy closes the link after the first successful payment |
+| `GET /v1/links/{reference}` | link status and its `payments[]` |
+| `GET /v1/payments` | every payment of the merchant over a period (Spring page: `content`, `last`, `totalPages`; `startDate`/`endDate` as dates, both or none) |
+| `GET /v1/payments/{id}/status` | the official status of a payment, the only source of truth before a transaction is confirmed |
+| `POST /v1/payments` | direct checkout at the counter |
+| `POST /v1/payments/{ref}/confirmOTP` | PayCard OTP |
+
+| Mode | API |
+|---|---|
+| Test | `https://sandbox-api.djomy.africa/v1/` |
+| Enabled | `https://api.djomy.africa/v1/` |
+
+Webhook to declare in the Djomy dashboard: `https://<your-domain>/payment/djomy/webhook`
+(header `X-Webhook-Signature: v1:<HMAC-SHA256(raw body, clientSecret)>`).
 
 ## Installation
 
-### Prerequisites
+1. Copy `payment_djomy` and `pos_djomy` into your addons path. `qrcode` is required
+   for the QR codes; the official Odoo Docker image already ships it.
+2. Update the apps list, install **Payment Provider: Djomy**, then **POS Djomy** if
+   you use the Point of Sale.
+3. **Invoicing › Configuration › Payment Providers › Djomy**: Client ID, Client
+   Secret, Partner Domain (required in production), link validity, allowed payment
+   methods; mode Test or Enabled; publish. Optionally generate the static QR.
+4. **Point of Sale › Configuration › Payment Methods**: a method with *Payment
+   Terminal* = Djomy and a default operator; add it to the POS. In the POS settings
+   (Payment block), optionally generate the shop QR.
+
+System parameters: `djomy.webhook_verify_signature` (True), `djomy.pending_auto_cancel_minutes`
+(120), `djomy.sync_pending_max_hours` (24), `djomy.bill_link_expiry_minutes` (180).
+
+## Tests
 
 ```bash
-# Required for QR code generation (pos_djomy)
-pip install qrcode[pil]
+odoo -d <test-db> -i payment_djomy,pos_djomy,sale --test-enable \
+     --test-tags /payment_djomy,/pos_djomy --without-demo --workers=0 --stop-after-init
 ```
 
-### Install Modules
-
-1. Copy both modules to your Odoo `addons` directory
-2. Update the apps list in Odoo
-3. Install **Payment Provider: Djomy** first
-4. Install **POS Djomy** if you use Point of Sale
-
-```bash
-# Example: copy to addons
-cp -r payment_djomy pos_djomy /path/to/odoo/addons/
-```
-
-## Configuration
-
-### 1. Configure Djomy Provider
-
-1. Go to **Invoicing** > **Configuration** > **Payment Providers**
-2. Click on **Djomy**
-3. Enter your credentials:
-   - **Client ID**: Provided by Djomy
-   - **Client Secret**: Provided by Djomy
-   - **Partner Domain**: Your domain registered and validated by Djomy *(optional in Test mode, required in Production)*
-4. Select mode: **Test** or **Enabled**
-5. Click **Publish**
-
-### 2. Configure POS Payment Method (if using POS)
-
-1. Go to **Point of Sale** > **Configuration** > **Payment Methods**
-2. Create a new payment method:
-   - **Name**: Djomy (or your preferred name)
-   - **Payment Terminal**: Djomy
-   - **Djomy Method**: Orange Money / MTN / Kulu
-3. Add the payment method to your POS configuration
-
-## API Environments
-
-| Mode | API URL |
-|------|---------|
-| Test (Sandbox) | `https://sandbox-api.djomy.africa/v1/` |
-| Production | `https://api.djomy.africa/v1/` |
-
-## Webhooks
-
-Configure the webhook URL in your Djomy dashboard:
-
-```
-https://yourdomain.com/payment/djomy/webhook
-```
-
-## Payment Flows
-
-### E-Commerce Flow
-
-```
-Customer selects Djomy → Enters phone number → Redirected to Djomy
-    → Confirms on mobile → Webhook notification → Order confirmed
-```
-
-### POS Flow
-
-```
-Cashier selects Djomy → Enters amount → QR code displayed
-    → Customer scans → Pays on mobile → Auto-confirmed via polling
-```
-
-## Supported Currencies
-
-- **GNF** - Guinean Franc
-- **XOF** - CFA Franc (West Africa)
-- **EUR** - Euro
-- **USD** - US Dollar
-
-## Directory Structure
-
-```
-djomy-odoo-plugin/
-├── README.md                 # This file
-├── payment_djomy/            # E-commerce payment provider
-│   ├── __manifest__.py
-│   ├── const.py              # API URLs, currencies, status codes
-│   ├── controllers/          # HTTP routes (webhooks)
-│   ├── models/               # Payment provider & transactions
-│   ├── views/                # UI templates
-│   ├── data/                 # Default provider data
-│   └── static/               # Assets (JS, images)
-└── pos_djomy/                # Point of Sale integration
-    ├── __manifest__.py
-    ├── models/               # POS payment method
-    ├── views/                # Configuration views
-    └── static/               # POS UI components (JS, XML)
-```
+The Djomy API is simulated (`payment_djomy/tests/common.py`): no test reaches the
+network.
 
 ## Requirements
 
-- **Odoo**: 19.0
-- **Python**: 3.10+
-- **Dependencies**: `qrcode[pil]` (for POS module)
+Odoo 19.0, Python 3.10+. Currencies: GNF, XOF, EUR, USD.
 
 ## License
 
-LGPL-3.0 - See [LICENSE](https://www.gnu.org/licenses/lgpl-3.0.html)
+LGPL-3.0.
 
 ## Support
 
-- **Djomy API Documentation**: [https://developers.djomy.africa](https://developers.djomy.africa)
-- **Issues**: [GitHub Issues](https://github.com/djoomy/djomy-odoo-plugin/issues)
+- Djomy API documentation: https://developers.djomy.africa
+- Issues: https://github.com/djoomy/djomy-odoo-plugin/issues
 
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Submit a pull request
-
----
-
-Developed by [Dookonect](https://dookonect.com) for [Djomy](https://djomy.africa)
+Developed by [Dookonect](https://dookonect.com) for [Djomy](https://djomy.africa).
